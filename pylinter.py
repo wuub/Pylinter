@@ -17,7 +17,7 @@ import collections
 import sublime
 import sublime_plugin
 
-import multiconf
+from . import multiconf
 
 # To override this, set the 'verbose' setting in the configuration file
 PYLINTER_VERBOSE = False
@@ -28,7 +28,7 @@ PYLINTER_STATUS_TAG = "Pylinter"
 def speak(*msg):
     """ Log messages to the console if VERBOSE is True """
     if PYLINTER_VERBOSE:
-        print " - PyLinter: ", " ".join(msg)
+        print(" - PyLinter: ", " ".join(msg))
 
 # Regular expression to disect Pylint error messages
 P_PYLINT_ERROR = re.compile(r"""
@@ -60,7 +60,7 @@ try:
 
     if out != "":
         PYLINT_PATH = os.path.join(out.strip(),  # pylint: disable=E1103
-                                   "lint.py")
+                                   b"lint.py")
 except ImportError:
     pass
 
@@ -91,7 +91,7 @@ class PylSet(object):
     def get(cls, setting_name):
         value = cls.get_or(setting_name, None)
         if value is None:
-            raise PylSetException("No value found for '%s'" % setting_name)
+            raise PylSetException(b"No value found for '%s'" % setting_name)
         return value
 
     @classmethod
@@ -128,7 +128,7 @@ class PylinterCommand(sublime_plugin.TextCommand):
         elif action == 'ignore':
             self.add_ignore()
         else:
-            speak("Running Pylinter on %s" % self.view.file_name())
+            speak("Running Pylinter on {}".format(self.view.file_name()))
 
             if self.view.file_name().endswith('.py'):
                 # erase status message if sitting on an error line
@@ -148,7 +148,8 @@ class PylinterCommand(sublime_plugin.TextCommand):
         speak("Verbose is", str(PYLINTER_VERBOSE))
         python_bin = PylSet.get_or('python_bin', 'python')
         python_path = PylSet.get_or('python_path', [])
-        python_path = PATH_SEPERATOR.join([str(p) for p in python_path])
+        if python_path is not None:
+            python_path = PATH_SEPERATOR.join([str(p) for p in python_path])
         working_dir = PylSet.get_or('working_dir', None)
         pylint_path = PylSet.get_or('pylint_path', None) or PYLINT_PATH
         pylint_rc = PylSet.get_or('pylint_rc', None) or ""
@@ -349,7 +350,7 @@ class PylintThread(threading.Thread):
         os.environ['PYTHONPATH'] = PATH_SEPERATOR.join(pythonpaths)
         speak("Updated PYTHONPATH is '%s'" % os.environ['PYTHONPATH'])
 
-        speak("Running command:\n    ", " ".join(command))
+        speak("Running command:\n{}".format(command))
         p = subprocess.Popen(command,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
@@ -357,8 +358,8 @@ class PylintThread(threading.Thread):
                              cwd=self.working_dir)
         output, eoutput = p.communicate()
 
-        lines = [line for line in output.split('\n')]  # pylint: disable=E1103
-        elines = [line for line in eoutput.split('\n')]  # pylint:disable=E1103
+        lines = [line for line in output.decode().split('\n')]  # pylint: disable=E1103
+        elines = [line for line in eoutput.decode().split('\n')]  # pylint:disable=E1103
         # Call set_timeout to have the error processing done
         # from the main thread
         sublime.set_timeout(lambda: self.process_errors(lines, elines), 100)
