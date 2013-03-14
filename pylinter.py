@@ -74,7 +74,10 @@ SEPERATOR_PATTERN = ';' if os.name == "nt" else '[:;]'
 
 class PylSet(object):
     """ Pylinter Settings class"""
-    settings = sublime.load_settings('Pylinter.sublime-settings')
+
+    @classmethod
+    def settings(cls):
+        return sublime.load_settings('Pylinter.sublime-settings')
 
     @classmethod
     def _get_settings_obj(cls):
@@ -85,7 +88,7 @@ class PylSet(object):
                 return view_settings
         except AttributeError:
             pass
-        return cls.settings
+        return cls.settings()
 
     @classmethod
     def get(cls, setting_name):
@@ -100,7 +103,7 @@ class PylSet(object):
 
         if isinstance(settings_obj, collections.Iterable):
             if not setting_name in settings_obj:
-                settings_obj = cls.settings
+                settings_obj = cls.settings()
         return multiconf.get(settings_obj, setting_name, default)
 
 
@@ -392,7 +395,6 @@ class BackgroundPylinter(sublime_plugin.EventListener):
     def __init__(self):
         sublime_plugin.EventListener.__init__(self)
         self.last_selected_line = -1
-        self.message_stay = PylSet.get_or("message_stay", False)
 
     def _last_selected_lineno(self, view):
         return view.rowcol(view.sel()[0].end())[0]
@@ -411,7 +413,7 @@ class BackgroundPylinter(sublime_plugin.EventListener):
                 self.last_selected_line = last_selected_line
                 if self.last_selected_line in PYLINTER_ERRORS[view_id]:
                     err_str = PYLINTER_ERRORS[view_id][self.last_selected_line]
-                    if self.message_stay:
+                    if PylSet.get_or("message_stay", False):
                         view.set_status(PYLINTER_STATUS_TAG, err_str)
                     else:
                         sublime.status_message(err_str)
