@@ -185,12 +185,12 @@ class PylinterCommand(sublime_plugin.TextCommand):
     def show_errors(cls, view):
         # Icons to be used in the margin
         if PylSet.get_or('use_icons', False):
-            icons = {"C": "../Pylinter/icons/convention",
-                     "E": "../Pylinter/icons/error",
-                     "F": "../Pylinter/icons/fatal",
-                     "I": "../Pylinter/icons/convention",
-                     "R": "../Pylinter/icons/refactor",
-                     "W": "../Pylinter/icons/warning"}
+            icons = {"C": "Packages/Pylinter/icons/convention.png",
+                     "E": "Packages/Pylinter/icons/error.png",
+                     "F": "Packages/Pylinter/icons/fatal.png",
+                     "I": "Packages/Pylinter/icons/convention.png",
+                     "R": "Packages/Pylinter/icons/refactor.png",
+                     "W": "Packages/Pylinter/icons/warning.png"}
         else:
             icons = {"C": "dot",
                      "E": "dot",
