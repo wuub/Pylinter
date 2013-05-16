@@ -129,7 +129,7 @@ class PylinterCommand(sublime_plugin.TextCommand):
         elif action == 'dump':
             self.dump_errors()
         elif action == 'ignore':
-            self.add_ignore()
+            self.add_ignore(edit)
         else:
             speak("Running Pylinter on {}".format(self.view.file_name()))
 
@@ -274,7 +274,7 @@ class PylinterCommand(sublime_plugin.TextCommand):
         except KeyError:
             pass
 
-    def add_ignore(self):
+    def add_ignore(self, edit):
         global PYLINTER_ERRORS
 
         view_id = self.view.id()
@@ -294,18 +294,17 @@ class PylinterCommand(sublime_plugin.TextCommand):
             err_code = err_code[:err_code.find(':')]
 
             if pylint_statement not in line_txt:
-                line_txt += " " + pylint_statement + err_code
+                line_txt += "  " + pylint_statement + err_code
             else:
                 line_txt += "," + err_code
 
-            edit = self.view.begin_edit()
             self.view.replace(edit, line_region, line_txt)
-            self.view.end_edit(edit)
 
     def is_enabled(self):
         file_name = self.view.file_name()
         if file_name:
             return file_name.endswith('.py')
+        return False
 
 
 class PylintThread(threading.Thread):
