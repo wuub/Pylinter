@@ -133,7 +133,7 @@ class PylinterCommand(sublime_plugin.TextCommand):
         else:
             speak("Running Pylinter on {}".format(self.view.file_name()))
 
-            if self.view.file_name().endswith('.py'):
+            if self.view.score_selector(0, 'source.python'):
                 # erase status message if sitting on an error line
                 self.view.erase_status(PYLINTER_STATUS_TAG)
                 thread = PylintThread(self.view, *settings)
@@ -303,7 +303,7 @@ class PylinterCommand(sublime_plugin.TextCommand):
     def is_enabled(self):
         file_name = self.view.file_name()
         if file_name:
-            return file_name.endswith('.py')
+            return bool(self.view.score_selector(0, 'source.python'))
         return False
 
 
@@ -399,7 +399,7 @@ class BackgroundPylinter(sublime_plugin.EventListener):
         return view.rowcol(view.sel()[0].end())[0]
 
     def on_post_save(self, view):
-        if view.file_name().endswith('.py') and PylSet.get_or('run_on_save',
+        if view.score_selector(0, 'source.python') and PylSet.get_or('run_on_save',
                                                               False):
             view.run_command('pylinter')
 
